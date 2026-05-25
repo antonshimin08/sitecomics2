@@ -1,0 +1,47 @@
+name: PHP Code Checks
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  php-lint:
+    name: PHP Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: php-cs-fixer
+
+      - name: Run PHP Lint
+        run: find . -name "*.php" -type f -exec php -l {} \;
+
+  phpcs:
+    name: PHP Code Style (PSR-12)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: phpcs
+
+      - name: Run PHPCS (PSR-12)
+        run: phpcs --standard=PSR12 --extensions=php . --ignore=vendor,node_modules || true
+
+      - name: Run PHP-CS-Fixer (dry-run)
+        run: php-cs-fixer fix --dry-run --diff . --exclude=vendor --exclude=node_modules || true
