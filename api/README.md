@@ -159,25 +159,90 @@ http://localhost:8000/api/categories.php
 
 ---
 
+### 6. Удаление комикса
+**URL:** `/api/delete.php`  
+**Метод:** DELETE  
+**Тело запроса (JSON):**
+```json
+{
+  "id": 1
+}
+```
+
+**Ответ (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Comic with ID 1 deleted successfully"
+}
+```
+
+**Ошибки:**
+- 400: Поле "id" отсутствует
+- 404: Комикс с таким ID не найден
+- 405: Используется неправильный метод запроса
+
+---
+
+## Таблица HTTP-кодов по endpoint'ам
+
+| Endpoint | Метод | Успех | Ошибки |
+|----------|-------|-------|--------|
+| `/api/read.php` | GET | 200 | 500 |
+| `/api/get.php` | GET | 200 | 400, 404, 500 |
+| `/api/categories.php` | GET | 200 | 500 |
+| `/api/create.php` | POST | 201 | 400, 405, 500 |
+| `/api/update.php` | PUT | 200 | 400, 404, 405, 500 |
+| `/api/delete.php` | DELETE | 200 | 400, 404, 405, 500 |
+
+---
+
+## HTTP-коды
+
+- **200 OK** — успешное выполнение запроса
+- **201 Created** — ресурс успешно создан
+- **400 Bad Request** — ошибка валидации, отсутствуют обязательные поля
+- **404 Not Found** — ресурс не найден
+- **405 Method Not Allowed** — используется неправильный HTTP метод
+- **500 Internal Server Error** — ошибка базы данных
+
+---
+
 ## Особенности реализации
 
 - ✅ Все запросы используют **PDO prepared statements** для защиты от SQL-инъекций
 - ✅ Флаг **JSON_UNESCAPED_UNICODE** для корректного отображения русского текста
 - ✅ Заголовок **Content-Type: application/json; charset=utf-8**
 - ✅ Проверка метода запроса: **405 Method Not Allowed** для чужих методов
-- ✅ **201 Created** при успешном создании, **200 OK** при обновлении, **404 Not Found** при отсутствии записи
 - ✅ Валидация всех полей на сервере
 - ✅ Проверка существования категории перед сохранением
 - ✅ Объединение таблиц через **JOIN** для получения полной информации
+- ✅ Идемпотентность DELETE — повторный запрос возвращает 404
+- ✅ Правильные HTTP статусы для каждого сценария
 
 ## Тестирование
 
 Можно протестировать endpoints:
-1. В браузере - просто откройте URL
-2. В **Postman** - создайте GET запрос на нужный URL
+1. В браузере - просто откройте URL (GET запросы)
+2. В **Postman** - создайте запрос нужного метода и типа
 3. Через **cURL**:
    ```bash
+   # GET запросы
    curl http://localhost:8000/api/read.php?limit=5
    curl http://localhost:8000/api/get.php?id=1
-   curl http://localhost:8000/api/categories.php
+   
+   # POST - создание
+   curl -X POST http://localhost:8000/api/create.php \
+     -H "Content-Type: application/json" \
+     -d '{"title":"Новый","price":5000,"image":"img.png","category_id":1}'
+   
+   # PUT - обновление
+   curl -X PUT http://localhost:8000/api/update.php \
+     -H "Content-Type: application/json" \
+     -d '{"id":1,"title":"Обновлено"}'
+   
+   # DELETE - удаление
+   curl -X DELETE http://localhost:8000/api/delete.php \
+     -H "Content-Type: application/json" \
+     -d '{"id":1}'
    ```
