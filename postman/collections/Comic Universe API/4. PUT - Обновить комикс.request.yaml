@@ -1,0 +1,33 @@
+$kind: http-request
+url: "{{base_url}}/update.php"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: '{"id": "{{comic_id}}", "title": "Обновленный комикс", "price": 6000}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Response is valid JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      pm.test("Response has success status", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.status).to.equal('success');
+          pm.expect(jsonData).to.have.property('message');
+      });
+
+      pm.test("Updated comic has new values", function () {
+          var jsonData = pm.response.json();
+          var comic = jsonData.data;
+          pm.expect(comic.title).to.equal('Обновленный комикс');
+          pm.expect(comic.price).to.equal(6000);
+      });
+    language: text/javascript
+order: 4000

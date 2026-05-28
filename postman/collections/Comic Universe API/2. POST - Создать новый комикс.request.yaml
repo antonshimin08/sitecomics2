@@ -1,0 +1,38 @@
+$kind: http-request
+url: "{{base_url}}/create.php"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: '{"title": "Новый комикс", "price": 5500, "image": "new_comic.png", "category_id": 1}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201 Created", function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test("Response is valid JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      pm.test("Response has success status", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.status).to.equal('success');
+          pm.expect(jsonData).to.have.property('data');
+      });
+
+      pm.test("Created comic has all required fields", function () {
+          var jsonData = pm.response.json();
+          var comic = jsonData.data;
+          pm.expect(comic).to.have.property('id');
+          pm.expect(comic).to.have.property('title');
+          pm.expect(comic.title).to.equal('Новый комикс');
+          pm.expect(comic).to.have.property('price');
+          pm.expect(comic.price).to.equal(5500);
+      });
+
+      pm.environment.set('comic_id', pm.response.json().data.id);
+    language: text/javascript
+order: 2000

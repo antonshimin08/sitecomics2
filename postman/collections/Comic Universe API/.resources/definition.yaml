@@ -1,0 +1,4 @@
+$kind: collection
+description: REST API для магазина комиксов Comic Universe
+variables:
+  base_url: http://localhost:8000/api

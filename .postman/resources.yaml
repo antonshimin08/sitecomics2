@@ -1,0 +1,17 @@
+workspace:
+  id: 572ba2e3-cde6-40e5-8d84-ab09273537d7
+
+localResources:
+  docs:
+    - ..\api\README.md
+    - ..\POSTMAN_TESTS.md
+    - ..\SECURITY.md
+  collections: []
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../postman/collections/Comic Universe API: 55211219-1acac6b9-c386-439b-bb2b-23d8fe868f58
+    ..\postman\collections\Comic Universe API Copy: 4d55f3db-3c58-403f-8b29-e80c0fdba614
+    ..\postman\collections\Comic Universe API: b8d87128-bf94-4b17-ad9a-eafb23c07ad6

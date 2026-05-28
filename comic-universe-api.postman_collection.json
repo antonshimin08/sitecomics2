@@ -1,0 +1,320 @@
+{
+  "info": {
+    "_postman_id": "comic-universe-api",
+    "name": "Comic Universe API",
+    "description": "REST API для магазина комиксов Comic Universe",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. GET - Получить все комиксы",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/read.php?limit=5",
+          "host": ["{{base_url}}"],
+          "path": ["read.php"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is valid JSON\", function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "",
+              "pm.test(\"Response has 'status', 'count', 'data' fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData).to.have.property('count');",
+              "    pm.expect(jsonData).to.have.property('data');",
+              "    pm.expect(jsonData.status).to.equal('success');",
+              "});",
+              "",
+              "pm.test(\"Data is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.be.an('array');",
+              "});",
+              "",
+              "pm.test(\"Each comic has required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    jsonData.data.forEach(function(comic) {",
+              "        pm.expect(comic).to.have.property('id');",
+              "        pm.expect(comic).to.have.property('title');",
+              "        pm.expect(comic).to.have.property('price');",
+              "        pm.expect(comic).to.have.property('image');",
+              "        pm.expect(comic).to.have.property('category');",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. POST - Создать новый комикс",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Новый комикс\", \"price\": 5500, \"image\": \"new_comic.png\", \"category_id\": 1}"
+        },
+        "url": {
+          "raw": "{{base_url}}/create.php",
+          "host": ["{{base_url}}"],
+          "path": ["create.php"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response is valid JSON\", function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.equal('success');",
+              "    pm.expect(jsonData).to.have.property('data');",
+              "});",
+              "",
+              "pm.test(\"Created comic has all required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var comic = jsonData.data;",
+              "    pm.expect(comic).to.have.property('id');",
+              "    pm.expect(comic).to.have.property('title');",
+              "    pm.expect(comic.title).to.equal('Новый комикс');",
+              "    pm.expect(comic).to.have.property('price');",
+              "    pm.expect(comic.price).to.equal(5500);",
+              "});",
+              "",
+              "pm.environment.set('comic_id', pm.response.json().data.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. GET - Получить комикс по ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/get.php?id={{comic_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["get.php"],
+          "query": [
+            {
+              "key": "id",
+              "value": "{{comic_id}}"
+            }
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is valid JSON\", function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "",
+              "pm.test(\"Single comic has all required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var comic = jsonData.data;",
+              "    pm.expect(comic).to.have.property('id');",
+              "    pm.expect(comic).to.have.property('title');",
+              "    pm.expect(comic).to.have.property('price');",
+              "    pm.expect(comic).to.have.property('category');",
+              "});",
+              "",
+              "pm.test(\"Returned comic has correct ID\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var expectedId = pm.environment.get('comic_id');",
+              "    pm.expect(jsonData.data.id).to.equal(parseInt(expectedId));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. PUT - Обновить комикс",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"id\": \"{{comic_id}}\", \"title\": \"Обновленный комикс\", \"price\": 6000}"
+        },
+        "url": {
+          "raw": "{{base_url}}/update.php",
+          "host": ["{{base_url}}"],
+          "path": ["update.php"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is valid JSON\", function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.equal('success');",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "});",
+              "",
+              "pm.test(\"Updated comic has new values\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var comic = jsonData.data;",
+              "    pm.expect(comic.title).to.equal('Обновленный комикс');",
+              "    pm.expect(comic.price).to.equal(6000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. DELETE - Удалить комикс",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"id\": \"{{comic_id}}\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/delete.php",
+          "host": ["{{base_url}}"],
+          "path": ["delete.php"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is valid JSON\", function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.equal('success');",
+              "    pm.expect(jsonData.message).to.include('deleted');",
+              "});",
+              "",
+              "pm.environment.set('comic_deleted', true);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. DELETE - Повторный запрос (проверка 404)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"id\": \"{{comic_id}}\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/delete.php",
+          "host": ["{{base_url}}"],
+          "path": ["delete.php"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Повторный DELETE возвращает 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Ошибка указывает на отсутствие ресурса\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.equal('error');",
+              "    pm.expect(jsonData.message).to.include('not found');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    }
+  ]
+}
