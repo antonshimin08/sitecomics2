@@ -1,0 +1,140 @@
+# Comic Universe - Apache Configuration
+# Security and URL rewriting rules
+
+# ========== ENABLE MOD_REWRITE ==========
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+</IfModule>
+
+# ========== SECURITY RULES ==========
+# Block access to sensitive files
+<FilesMatch "^(config\.php|\.env|\.git|database\.sqlite|logs)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to hidden files and directories
+<FilesMatch "^\.|^#.*#">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ========== COMPRESSION ==========
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/x-httpd-php
+</IfModule>
+
+# ========== CACHE HEADERS ==========
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Cache images for 30 days
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/gif "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/x-icon "access plus 30 days"
+    
+    # Cache CSS for 7 days
+    ExpiresByType text/css "access plus 7 days"
+    
+    # Cache JavaScript for 7 days
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType text/javascript "access plus 7 days"
+    
+    # Don't cache HTML (always fresh)
+    ExpiresByType text/html "now"
+</IfModule>
+
+# ========== HTTP HEADERS ==========
+<IfModule mod_headers.c>
+    # Set UTF-8 encoding
+    Header set Content-Type "text/html; charset=utf-8"
+    
+    # Security headers
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Remove server information
+    Header unset Server
+    Header unset X-Powered-By
+    Header unset X-AspNet-Version
+</IfModule>
+
+# ========== URL REWRITING ==========
+<IfModule mod_rewrite.c>
+    # Redirect HTTP to HTTPS (uncomment in production)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # Remove .php extension from URLs
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([a-zA-Z0-9-]+)/?$ $1.php [QSA]
+    
+    # Redirect index.php to root
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP
+    RewriteRule ^index\.php$ / [R=301,L]
+    
+    # Prevent direct access to certain directories
+    RewriteRule ^(config|includes|logs|cache|uploads)/ - [F]
+</IfModule>
+
+# ========== MIME TYPES ==========
+<IfModule mod_mime.c>
+    AddType application/x-httpd-php .php
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType image/svg+xml .svg
+    AddType application/font-woff .woff
+    AddType application/font-woff2 .woff2
+</IfModule>
+
+# ========== DIRECTORY PROTECTION ==========
+<Directory "*/includes">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Directory>
+
+<Directory "*/logs">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Directory>
+
+<Directory "*/cache">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Directory>
