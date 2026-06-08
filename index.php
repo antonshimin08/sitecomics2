@@ -78,7 +78,7 @@ $categories = $pdo->query('SELECT id, name FROM categories ORDER BY name')->fetc
 
     <section class="hero">
         <h2 class="hero__title">Добро пожаловать в Comic Universe</h2>
-        <p class="hero__subtitle">Выбирай комиксы, фильтруй по категориям и добавляй товары в корзину. Всё работает через PDO и SQLite.</p>
+        <p class="hero__subtitle">Выбирай комиксы, фильтруй по категориям и добавляй товары в корзину.</p>
     </section>
 
     <div class="layout">
