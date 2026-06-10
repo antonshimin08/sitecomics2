@@ -1,11 +1,11 @@
 <?php
 session_start();
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/myauth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    header('Location: /index.php');
+    header('Location: index.php');
     exit();
 }
 
@@ -16,30 +16,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = sanitizeInput($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     
-    // Validate input
     if (empty($username) || empty($password)) {
         $error = 'Пожалуйста, заполните все поля';
     } else {
         try {
-            // Prepare query with PDO
-            $stmt = $pdo->prepare("SELECT id, username, password_hash, role FROM users WHERE username = ?");
-            $stmt->execute([$username]);
+            $stmt = $pdo->prepare("SELECT id, username, password_hash, role FROM users WHERE username = ? OR email = ?");
+            $stmt->execute([$username, $username]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            // Verify user exists and password is correct
-            if ($user && verifyPassword($password, $user['password_hash'])) {
-                // Set session variables
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
-                
-                header('Location: /index.php');
-                exit();
+            if ($user) {
+                if (verifyPassword($password, $user['password_hash'])) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['role'] = $user['role'];
+                    header('Location: index.php');
+                    exit();
+                } else {
+                    $error = 'Неверное имя пользователя или пароль';
+                }
             } else {
                 $error = 'Неверное имя пользователя или пароль';
             }
         } catch (PDOException $e) {
-            $error = 'Ошибка подключения к БД: ' . $e->getMessage();
+            $error = 'Ошибка подключения к БД';
         }
     }
 }
@@ -50,134 +49,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход - Comic Universe</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="main.css?v=<?php echo time(); ?>">
     <style>
         .login-container {
             max-width: 400px;
             margin: 100px auto;
             padding: 30px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #1a1f2e;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        
         .login-container h1 {
             text-align: center;
-            color: #333;
+            color: white;
             margin-bottom: 30px;
         }
-        
         .form-group {
             margin-bottom: 20px;
         }
-        
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: #e0e0e0;
             font-weight: 500;
         }
-        
         .form-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px;
+            background: #2a2f3e;
+            border: 1px solid #3a3f4e;
+            border-radius: 8px;
             font-size: 14px;
+            color: white;
             box-sizing: border-box;
         }
-        
         .form-group input:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0,123,255,0.5);
+            border-color: #667eea;
         }
-        
         .form-group button {
             width: 100%;
             padding: 12px;
-            background: #007bff;
+            background: #667eea;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
             transition: background 0.3s;
         }
-        
         .form-group button:hover {
-            background: #0056b3;
+            background: #5a67d8;
         }
-        
         .error-message {
-            color: #d32f2f;
-            background: #ffebee;
+            color: #ff6b6b;
+            background: rgba(220,53,69,0.2);
             padding: 12px;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            border-left: 4px solid #d32f2f;
+            border-left: 4px solid #dc3545;
         }
-        
-        .success-message {
-            color: #388e3c;
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #388e3c;
-        }
-        
         .login-footer {
             text-align: center;
             margin-top: 20px;
-            color: #666;
+            color: #a0a0b0;
         }
-        
         .login-footer a {
-            color: #007bff;
+            color: #667eea;
             text-decoration: none;
         }
-        
         .login-footer a:hover {
             text-decoration: underline;
+        }
+        nav {
+            background: #0f111a;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <nav style="background: #333; color: white; padding: 15px; text-align: center;">
-        <a href="/index.php" style="color: white; text-decoration: none; font-weight: bold;">← Вернуться в каталог</a>
+    <nav>
+        <a href="index.php">← Вернуться в каталог</a>
     </nav>
     
     <div class="login-container">
         <h1>🔐 Вход в Comic Universe</h1>
         
         <?php if ($error): ?>
-            <div class="error-message"><?php echo sanitizeOutput($error); ?></div>
+            <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
         
         <form method="POST">
             <div class="form-group">
-                <label for="username">Имя пользователя:</label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username" 
-                    value="<?php echo sanitizeOutput($username); ?>"
-                    required 
-                    placeholder="Введите имя пользователя"
-                >
+                <label for="username">Имя пользователя или Email:</label>
+                <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required placeholder="Введите логин или email">
             </div>
             
             <div class="form-group">
                 <label for="password">Пароль:</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required 
-                    placeholder="Введите пароль"
-                >
+                <input type="password" id="password" name="password" required placeholder="Введите пароль">
             </div>
             
             <div class="form-group">
@@ -186,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         
         <div class="login-footer">
-            Нет аккаунта? <a href="/register.php">Зарегистрироваться</a>
+            Нет аккаунта? <a href="register.php">Зарегистрироваться</a>
         </div>
     </div>
 </body>

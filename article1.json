@@ -1,0 +1,5 @@
+{
+  "title": "1. Project Overview - Comic Universe",
+  "content": "# Comic Universe Project Overview\n\n## Project Description\nComic Universe is a modern PHP e-commerce platform for selling comic books.\n\n## Key Information\n- Project ID: SSM\n- Version: 1.0.0\n- Status: Production Ready\n\n## Features\n- Full e-commerce catalog\n- User authentication\n- Shopping cart\n- REST API\n- Multi-database support",
+  "summary": "Overview of Comic Universe project"
+}

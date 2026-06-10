@@ -1,53 +1,62 @@
 <?php
 /**
  * Configuration file for Comic Universe e-commerce application
- * Contains database settings, environment variables, and debug options
+ * Loads environment variables from .env file
  */
 
+// Load environment variables from .env file
+require_once __DIR__ . '/includes/Environment.php';
+
+try {
+    Environment::load(__DIR__ . '/.env');
+} catch (Exception $e) {
+    die('Error loading environment configuration: ' . $e->getMessage());
+}
+
 // ========== ENVIRONMENT SETTINGS ==========
-// 'development' | 'production' | 'staging'
-define('ENVIRONMENT', 'development');
+define('ENVIRONMENT', Environment::get('ENVIRONMENT', 'development'));
+define('DEBUG_MODE', Environment::getBoolean('DEBUG_MODE', false));
 
 // ========== DATABASE CONFIGURATION ==========
-// Database type: 'sqlite' or 'mysql'
-define('DB_TYPE', 'sqlite');
-
-// SQLite configuration (for development/small projects)
-define('DB_PATH', __DIR__ . '/database.sqlite');
-
-// MySQL configuration (for production)
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'comic_universe');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_PORT', 3306);
-define('DB_CHARSET', 'utf8mb4');
+define('DB_TYPE', Environment::get('DB_TYPE', 'sqlite'));
+define('DB_PATH', Environment::get('DB_PATH', __DIR__ . '/database.sqlite'));
+define('DB_HOST', Environment::get('DB_HOST', 'localhost'));
+define('DB_NAME', Environment::get('DB_NAME', 'comic_universe'));
+define('DB_USER', Environment::get('DB_USER', 'root'));
+define('DB_PASS', Environment::get('DB_PASS', ''));
+define('DB_PORT', Environment::getInteger('DB_PORT', 3306));
+define('DB_CHARSET', Environment::get('DB_CHARSET', 'utf8mb4'));
 
 // ========== APPLICATION SETTINGS ==========
-// Application name
-define('APP_NAME', 'Comic Universe');
-define('APP_VERSION', '1.0.0');
-
-// Site URL (with trailing slash)
-define('SITE_URL', 'http://localhost:8000/');
+define('APP_NAME', Environment::get('APP_NAME', 'Comic Universe'));
+define('APP_VERSION', Environment::get('APP_VERSION', '1.0.0'));
+define('SITE_URL', Environment::get('SITE_URL', 'http://comic-universe.xo.je/'));
 
 // ========== SECURITY SETTINGS ==========
-// Enable/disable debug mode
-define('DEBUG_MODE', ENVIRONMENT === 'development');
-
-// Log errors to file
-define('LOG_ERRORS', true);
-define('LOG_PATH', __DIR__ . '/logs/');
-
-// Session timeout (in seconds)
-define('SESSION_TIMEOUT', 3600); // 1 hour
-
-// Password hashing algorithm
+define('LOG_ERRORS', Environment::getBoolean('LOG_ERRORS', true));
+define('LOG_PATH', Environment::get('LOG_PATH', __DIR__ . '/logs/'));
+define('SESSION_TIMEOUT', Environment::getInteger('SESSION_TIMEOUT', 3600));
 define('PASSWORD_ALGO', PASSWORD_BCRYPT);
 
 // ========== API SETTINGS ==========
-// Allow CORS requests
-define('ENABLE_CORS', false);
+define('ENABLE_CORS', Environment::getBoolean('ENABLE_CORS', false));
+
+// ========== ERROR HANDLING ==========
+// Initialize error and exception handlers
+require_once __DIR__ . '/includes/Logger.php';
+require_once __DIR__ . '/includes/ErrorHandler.php';
+
+if (DEBUG_MODE === false) {
+    // Production error handling
+    ErrorHandler::register();
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
+} else {
+    // Development error handling
+    ini_set('display_errors', 1);
+    ini_set('log_errors', 1);
+    error_reporting(E_ALL);
+}
 define('ALLOWED_ORIGINS', ['localhost:8000']);
 
 // API rate limiting (requests per minute)

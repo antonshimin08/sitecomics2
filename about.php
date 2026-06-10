@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/myauth.php';
 $cartCount = array_sum($_SESSION['cart'] ?? []);
 ?>
 
@@ -9,7 +9,7 @@ $cartCount = array_sum($_SESSION['cart'] ?? []);
 <head>
     <meta charset="UTF-8">
     <title>О магазине — Comic Universe</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="http://comic-universe.xo.je/main.css?v=<?= time() ?>">
 </head>
 <body>
 <div class="page">

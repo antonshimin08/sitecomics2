@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/myauth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация - Comic Universe</title>
-    <link rel="stylesheet" href="/styles.css">
+   <link rel="stylesheet" href="http://comic-universe.xo.je/main.css?v=<?= time() ?>">
     <style>
         .register-container {
             max-width: 450px;
